@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Publicitaire - Ligue de Golf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .input-field { @apply p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200; }
+        .label-field { @apply block text-sm font-medium text-gray-700 mb-1; }
+        .form-group { @apply mb-4; }
+        h1 {
+            color: #065F46;
+            font-weight: 700;
+            text-align: center;
+        }
+        h2 {
+            color: #1E3A8A;
+            font-weight: 600;
+        }
+        h3 {
+            color: #1E40AF;
+            font-weight: 600;
+        }
+        .label-field {
+            color: #1F2937;
+            font-weight: 500;
+        }
+        .btn-primary, .btn-delete {
+            background-color: #DC2626;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        .btn-primary:hover, .btn-delete:hover {
+            background-color: #B91C1C;
+        }
+        .btn-delete {
+            background-color: #EF4444;
+            color: white;
+            margin-left: 0.5rem;
+        }
+        .btn-delete:hover {
+            background-color: #DC2626;
+        }
+        table tr:nth-child(even) {
+            background-color: #F9FAFB;
+        }
+        table tr:hover {
+            background-color: #F3F4F6;
+        }
+        .my-part { color: #10B981; font-weight: bold; }
+        .league-part { color: #F59E0B; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 sm:p-8 min-h-screen flex flex-col items-center">
+
+    <div class="mb-8 w-full flex justify-center">
+        <img src="/images/logo.png" alt="Le Golf en Nouvelle-Calédonie" class="max-w-xs" style="height: auto; width: 300px;">
+    </div>
+
+    <div class="w-full max-w-6xl bg-white shadow-lg rounded-lg p-6 mb-8">
+        <h1 class="text-3xl font-bold mb-6 border-b pb-3">Suivi Publicitaire - Ligue de Golf</h1>
+        <form id="adForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="form-group">
+                <label for="startDate" class="label-field">Date de début</label>
+                <input type="date" id="startDate" class="input-field w-full" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate" class="label-field">Date de fin</label>
+                <input type="date" id="endDate" class="input-field w-full" required>
+            </div>
+            <div class="form-group">
+                <label for="advertiser" class="label-field">Annonceur</label>
+                <input type="text" id="advertiser" class="input-field w-full" placeholder="Nom de l'annonceur" required>
+            </div>
+            <div class="form-group">
+                <label for="format" class="label-field">Format</label>
+                <input type="text" id="format" class="input-field w-full" placeholder="Ex: Bannière" required>
+            </div>
+            <div class="form-group">
+                <label for="agreedPrice" class="label-field">Prix convenu (F CFP)</label>
+                <input type="number" id="agreedPrice" class="input-field w-full" placeholder="Ex: 100000" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="amountReceived" class="label-field">Montant encaissé (F CFP)</label>
+                <input type="number" id="amountReceived" class="input-field w-full" placeholder="Ex: 70000" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="receivedBy" class="label-field">Encaissement par</label>
+                <select id="receivedBy" class="input-field w-full" required>
+                    <option value="">Sélectionnez l'encaisseur</option>
+                    <option value="Le Prestataire">Le Prestataire</option>
+                    <option value="La Ligue">La Ligue</option>
+                </select>
+            </div>
+            <div class="md:col-span-2 flex justify-end">
+                <button type="submit" class="btn-primary">Ajouter la publicité</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="w-full max-w-6xl bg-white shadow-lg rounded-lg p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold">Détail des publicités</h2>
+            <div class="flex space-x-4">
+                <select id="periodFilter" class="input-field">
+                    <option value="month">Mois en cours</option>
+                    <option value="quarter">Trimestre en cours</option>
+                    <option value="year">Année en cours</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">Résumé pour la période sélectionnée</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-gray-600">Total encaissé</p>
+                    <p id="totalRevenue" class="text-2xl font-bold">0 F CFP</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-gray-600">Ma part (70%)</p>
+                    <p id="myPart" class="text-2xl font-bold my-part">0 F CFP</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-gray-600">Part Ligue (30%)</p>
+                    <p id="leaguePart" class="text-2xl font-bold league-part">0 F CFP</p>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto mb-8">
+            <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                <thead class="bg-blue-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Début</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Fin</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Annonceur</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Format</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Prix Convenu</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Montant Reçu</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Encaissement par</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Ma Part (70%)</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Part Ligue (30%)</th>
+                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adsTableBody" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="10" class="px-4 py-2 text-center text-gray-500">Chargement des publicités...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlN0GKjLDc97bnF6j9Hu8w_AcsPqOFx5I",
+            authDomain: "facturation-pub-site-golf.firebaseapp.com",
+            projectId: "facturation-pub-site-golf",
+            storageBucket: "facturation-pub-site-golf.firebasestorage.app",
+            messagingSenderId: "721070600308",
+            appId: "1:721070600308:web:9b3dca239ba298282c2121",
+            measurementId: "G-GD4XLT21TC"
+        };
+
+        // Importations des modules Firebase nécessaires
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialisation de l'application Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Variables globales
+        let userId;
+        let adsData = [];
+
+        // Récupération des éléments du DOM
+        const adForm = document.getElementById('adForm');
+        const adsTableBody = document.getElementById('adsTableBody');
+        const periodFilter = document.getElementById('periodFilter');
+        const totalRevenueDisplay = document.getElementById('totalRevenue');
+        const myPartDisplay = document.getElementById('myPart');
+        const leaguePartDisplay = document.getElementById('leaguePart');
+
+        // Fonction pour formater les montants
+        function formatAmount(amount) {
+            return amount.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " F CFP";
+        }
+
+        // Fonction pour filtrer les pubs par période
+        function filterAdsByPeriod(period) {
+            const now = new Date();
+            let startDate = new Date();
+            if (period === 'month') {
+                startDate.setDate(1);
+            } else if (period === 'quarter') {
+                startDate.setMonth(Math.floor(now.getMonth() / 3) * 3, 1);
+            } else if (period === 'year') {
+                startDate.setMonth(0, 1);
+            }
+            return adsData.filter(ad => {
+                const adStart = new Date(ad.startDate);
+                return adStart >= startDate && adStart <= now;
+            });
+        }
+
+        // Fonction pour mettre à jour le tableau et les résumés
+        function updateTableAndSummary(filteredAds) {
+            adsTableBody.innerHTML = "";
+            let totalRevenue = 0;
+            let totalMyPart = 0;
+            let totalLeaguePart = 0;
+            if (filteredAds.length === 0) {
+                adsTableBody.innerHTML = '<tr><td colspan="10" class="px-4 py-2 text-center text-gray-500">Aucune publicité pour cette période.</td></tr>';
+                return;
+            }
+            filteredAds.forEach(ad => {
+                const myPart = ad.amountReceived * 0.7;
+                const leaguePart = ad.amountReceived * 0.3;
+                totalRevenue += ad.amountReceived;
+                totalMyPart += myPart;
+                totalLeaguePart += leaguePart;
+                const row = `
+                    <tr class="border-b last:border-0 hover:bg-gray-50" data-id="${ad.id}">
+                        <td class="px-4 py-2 text-sm">${ad.startDate}</td>
+                        <td class="px-4 py-2 text-sm">${ad.endDate}</td>
+                        <td class="px-4 py-2 text-sm">${ad.advertiser}</td>
+                        <td class="px-4 py-2 text-sm">${ad.format}</td>
+                        <td class="px-4 py-2 text-sm">${formatAmount(ad.agreedPrice)}</td>
+                        <td class="px-4 py-2 text-sm">${formatAmount(ad.amountReceived)}</td>
+                        <td class="px-4 py-2 text-sm">${ad.receivedBy}</td>
+                        <td class="px-4 py-2 text-sm my-part">${formatAmount(myPart)}</td>
+                        <td class="px-4 py-2 text-sm league-part">${formatAmount(leaguePart)}</td>
+                        <td class="px-4 py-2 text-sm text-right flex items-center justify-end space-x-2">
+                            <button class="btn-primary btn-generate-doc">Générer le document</button>
+                            <button class="btn-delete">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+                adsTableBody.innerHTML += row;
+            });
+            totalRevenueDisplay.textContent = formatAmount(totalRevenue);
+            myPartDisplay.textContent = formatAmount(totalMyPart);
+            leaguePartDisplay.textContent = formatAmount(totalLeaguePart);
+        }
+
+        // Nouvelle fonction pour générer le document HTML de la facture
+        function generateHTMLInvoice(ad) {
+            const invoiceContent = `
+                <!DOCTYPE html>
+                <html lang="fr">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Facture - ${ad.advertiser}</title>
+                    <style>
+                        body { font-family: sans-serif; margin: 40px; }
+                        .header { text-align: right; }
+                        .details { margin-top: 50px; }
+                        .details h3 { margin-bottom: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        .total { text-align: right; margin-top: 20px; }
+                        .footer { margin-top: 50px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>FACTURE</h1>
+                        <p>Date : ${new Date().toLocaleDateString('fr-FR')}</p>
+                        <p>Facture N° ${ad.id.substring(0, 8)}</p>
+                    </div>
+                    <div class="details">
+                        <h3>Émetteur :</h3>
+                        <p>Votre Nom / Nom de l'entreprise<br>
+                        Votre adresse<br>
+                        Votre téléphone<br>
+                        Votre e-mail<br>
+                        Votre SIRET/RCS</p>
+                    </div>
+                    <div class="details">
+                        <h3>Destinataire :</h3>
+                        <p>${ad.advertiser}</p>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Période</th>
+                                <th>Prix Convenu</th>
+                                <th>Montant Reçu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Publicité sur le site - ${ad.format}</td>
+                                <td>Du ${ad.startDate} au ${ad.endDate}</td>
+                                <td>${formatAmount(ad.agreedPrice)}</td>
+                                <td>${formatAmount(ad.amountReceived)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="total">
+                        <h3>Total à payer : ${formatAmount(ad.amountReceived)}</h3>
+                    </div>
+                    <div class="footer">
+                        <p>Merci pour votre confiance !</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(invoiceContent);
+            newWindow.document.close();
+        }
+
+        // Écoute des événements du DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            signInAnonymously(auth)
+                .then((userCredential) => {
+                    userId = userCredential.user.uid;
+                    console.log("Connecté de manière anonyme. User ID:", userId);
+                    const q = query(collection(db, "ads"), orderBy("timestamp", "desc"));
+                    onSnapshot(q, (querySnapshot) => {
+                        adsData = [];
+                        querySnapshot.forEach((doc) => {
+                            adsData.push({ id: doc.id, ...doc.data() });
+                        });
+                        const selectedPeriod = periodFilter.value;
+                        const filteredAds = filterAdsByPeriod(selectedPeriod);
+                        updateTableAndSummary(filteredAds);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Erreur de connexion anonyme:", error);
+                });
+
+            adForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                // Vérification que tous les champs requis sont remplis
+                if (!adForm.checkValidity()) {
+                    alert("Veuillez remplir tous les champs obligatoires.");
+                    return;
+                }
+
+                const newAd = {
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    advertiser: document.getElementById('advertiser').value,
+                    format: document.getElementById('format').value,
+                    agreedPrice: parseFloat(document.getElementById('agreedPrice').value),
+                    amountReceived: parseFloat(document.getElementById('amountReceived').value),
+                    receivedBy: document.getElementById('receivedBy').value,
+                    timestamp: new Date()
+                };
+                try {
+                    const docRef = await addDoc(collection(db, "ads"), newAd);
+                    console.log("Document ajouté avec succès ! ID:", docRef.id);
+                    adForm.reset();
+                    alert("Publicité ajoutée avec succès !");
+                } catch (e) {
+                    console.error("Erreur lors de l'ajout du document : ", e);
+                    alert("Erreur lors de l'ajout de la publicité. Veuillez vérifier la console du navigateur pour les détails.");
+                }
+            });
+
+            periodFilter.addEventListener('change', (e) => {
+                const selectedPeriod = e.target.value;
+                const filteredAds = filterAdsByPeriod(selectedPeriod);
+                updateTableAndSummary(filteredAds);
+            });
+
+            adsTableBody.addEventListener('click', async (e) => {
+                const row = e.target.closest('tr');
+                if (!row) return;
+
+                const adId = row.dataset.id;
+                const ad = adsData.find(d => d.id === adId);
+
+                if (e.target.classList.contains('btn-generate-doc')) {
+                    if (ad) {
+                        generateHTMLInvoice(ad);
+                    }
+                } else if (e.target.classList.contains('btn-delete')) {
+                    if (confirm("Êtes-vous sûr de vouloir supprimer cette publicité ?")) {
+                        try {
+                            const adRef = doc(db, "ads", adId);
+                            await deleteDoc(adRef);
+                            alert("Publicité supprimée avec succès !");
+                        } catch (error) {
+                            console.error("Erreur lors de la suppression du document : ", error);
+                            alert("Erreur lors de la suppression de la publicité.");
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
